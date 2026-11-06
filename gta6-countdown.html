@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>GTA VI Countdown Overlay</title>
+<!-- Fuente de respaldo si no pones la oficial en assets/ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /*
+    FUENTES OFICIALES
+    Coloca los archivos en la carpeta assets/ junto a este HTML:
+      assets/gta-art-deco.otf  (o .ttf / .woff2) -> tipografía oficial "GTA Art Deco"
+    Si no existe, se usa "Lexend" (Google Fonts), la más parecida.
+  */
+  @font-face {
+    font-family: "GTA";
+    src: url("assets/gta-art-deco.woff2") format("woff2"),
+         url("assets/gta-art-deco.otf") format("opentype"),
+         url("assets/gta-art-deco.ttf") format("truetype");
+    font-display: swap;
+  }
+
+  :root {
+    --scale: 1;
+    /* Paleta Vice City del arte oficial de GTA VI */
+    --blue: #3a5bd9;
+    --purple: #8b3fd1;
+    --pink: #ff3d9a;
+    --orange: #ffb15c;
+    --text: #ffffff;
+    --label: rgba(255, 255, 255, .75);
+  }
+
+  html, body {
+    margin: 0;
+    background: transparent !important;
+    overflow: hidden;
+  }
+
+  .overlay {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(28px * var(--scale));
+    padding: calc(20px * var(--scale)) calc(28px * var(--scale));
+    color: var(--text);
+    font-family: "GTA", "Lexend", system-ui, sans-serif;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.55));
+    animation: fadeIn .8s ease-out both;
+  }
+  .overlay.stack { flex-direction: column; gap: calc(14px * var(--scale)); }
+
+  /* ---------- LOGO ---------- */
+  .logo img {
+    height: calc(110px * var(--scale));
+    width: auto;
+    display: block;
+  }
+  .logo .fallback {
+    display: none;
+    font-family: "GTA", "Lexend", sans-serif;
+    font-size: calc(96px * var(--scale));
+    line-height: .85;
+    background: linear-gradient(180deg, var(--orange) 0%, var(--pink) 55%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -.02em;
+  }
+  .logo.no-img img { display: none; }
+  .logo.no-img .fallback { display: block; }
+
+  .divider {
+    width: calc(3px * var(--scale));
+    align-self: stretch;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--blue), var(--purple), var(--pink), var(--orange));
+  }
+  .stack .divider {
+    width: 60%;
+    height: calc(3px * var(--scale));
+    align-self: center;
+  }
+
+  /* ---------- COUNTDOWN ---------- */
+  .right { display: flex; flex-direction: column; gap: calc(6px * var(--scale)); }
+  .stack .right { align-items: center; }
+
+  .title {
+    font-weight: 500;
+    font-size: calc(14px * var(--scale));
+    letter-spacing: .32em;
+    text-transform: uppercase;
+    color: var(--label);
+  }
+
+  .timer { display: flex; align-items: flex-start; gap: calc(10px * var(--scale)); }
+
+  .unit { display: flex; flex-direction: column; align-items: center; }
+  .num {
+    font-family: "GTA", "Lexend", sans-serif;
+    font-size: calc(58px * var(--scale));
+    font-weight: 500;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    min-width: 1.15em;
+    text-align: center;
+  }
+  .unit.days .num {
+    background: linear-gradient(180deg, var(--pink), var(--orange));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lbl {
+    margin-top: calc(4px * var(--scale));
+    font-weight: 500;
+    font-size: calc(11px * var(--scale));
+    letter-spacing: .25em;
+    color: var(--label);
+  }
+  .sep {
+    font-family: "GTA", "Lexend", sans-serif;
+    font-size: calc(44px * var(--scale));
+    font-weight: 400;
+    line-height: 1.15;
+    opacity: .4;
+  }
+
+  .tick { animation: tick .35s ease-out; }
+
+  .released {
+    font-family: "GTA", "Lexend", sans-serif;
+    font-size: calc(48px * var(--scale));
+    font-weight: 600;
+    line-height: 1;
+    background: linear-gradient(90deg, var(--orange), var(--pink), var(--purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  @keyframes tick { from { transform: translateY(-6%); opacity: .4; } to { transform: none; opacity: 1; } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+  <div class="overlay" id="overlay">
+    <div class="logo" id="logo">
+      <img id="logoImg" src="assets/gta6-logo.png" alt="" onerror="this.parentElement.classList.add('no-img')">
+      <div class="fallback">VI</div>
+    </div>
+    <div class="divider"></div>
+    <div class="right">
+      <div class="title" id="title">Faltan</div>
+      <div class="timer" id="timer">
+        <div class="unit days"><span class="num" id="d">--</span><span class="lbl">DÍAS</span></div>
+        <span class="sep">:</span>
+        <div class="unit"><span class="num" id="h">--</span><span class="lbl">HRS</span></div>
+        <span class="sep">:</span>
+        <div class="unit"><span class="num" id="m">--</span><span class="lbl">MIN</span></div>
+        <span class="sep">:</span>
+        <div class="unit"><span class="num" id="s">--</span><span class="lbl">SEG</span></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /*
+    Parámetros por URL (opcionales):
+      ?date=2026-11-19T00:00:00   fecha objetivo (hora local del PC)
+      &layout=stack               logo arriba y contador abajo (por defecto: row)
+      &scale=1.5                  tamaño
+      &title=Llega%20en           texto encima del contador
+      &logo=https://...png        otra ruta/URL para el logo
+      &secs=0                     ocultar segundos
+      &bg=%23222                  fondo de prueba (solo para previsualizar; en OBS no lo uses)
+  */
+  const p = new URLSearchParams(location.search);
+  const target = new Date(p.get("date") || "2026-11-19T00:00:00");
+  const overlay = document.getElementById("overlay");
+
+  if (p.get("layout") === "stack") overlay.classList.add("stack");
+  if (p.get("scale")) document.documentElement.style.setProperty("--scale", p.get("scale"));
+  if (p.get("title") !== null) document.getElementById("title").textContent = p.get("title");
+
+  if (p.get("bg")) document.body.style.setProperty("background", p.get("bg"), "important");
+
+  const logo = document.getElementById("logo");
+  const img = document.getElementById("logoImg");
+  if (p.get("logo")) { logo.classList.remove("no-img"); img.src = p.get("logo"); }
+
+  if (p.get("secs") === "0") {
+    const s = document.getElementById("s").parentElement;
+    s.previousElementSibling.remove();
+    s.remove();
+  }
+
+  const pad = n => String(n).padStart(2, "0");
+  const prev = {};
+
+  function set(id, val) {
+    const el = document.getElementById(id);
+    if (!el || prev[id] === val) return;
+    prev[id] = val;
+    el.textContent = val;
+    el.classList.remove("tick");
+    void el.offsetWidth;
+    el.classList.add("tick");
+  }
+
+  function update() {
+    const diff = target - Date.now();
+    if (diff <= 0) {
+      document.getElementById("title").textContent = "";
+      document.getElementById("timer").innerHTML = '<span class="released">YA DISPONIBLE</span>';
+      clearInterval(timer);
+      return;
+    }
+    const t = Math.floor(diff / 1000);
+    set("d", pad(Math.floor(t / 86400)));
+    set("h", pad(Math.floor(t % 86400 / 3600)));
+    set("m", pad(Math.floor(t % 3600 / 60)));
+    set("s", pad(t % 60));
+  }
+
+  update();
+  const timer = setInterval(update, 250);
+</script>
+</body>
+</html>
